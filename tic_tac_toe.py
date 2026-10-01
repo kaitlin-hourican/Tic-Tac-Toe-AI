@@ -2,12 +2,16 @@ SIZE = 3
 PLAYERS = ('X', 'O')
 
 def new_board():
-    # return [[None for _ in range(SIZE)] for _ in range(SIZE)]
+    return [[None for _ in range(SIZE)] for _ in range(SIZE)]
 
-    # TEST BOARDS - checking winning condition
+    # TEST - checking winning condition
     # return [["X", None, None], ["X", None, None], ["X", None, None]]      # col winner
-    return [[None, None, None], ["O", "O", "O"], ["X", None, None]]       # row winner
+    # return [[None, None, None], ["O", "O", "O"], ["X", None, None]]       # row winner
     # return [[None, None, "X"], [None, "X", None], ["X", None, None]]      # diagonal winner
+
+    # TEST - checking if board empty
+    # return [["O", "X", "O"], ["O", "X", "O"], ["X", None, "X"]]         # false - continue game
+    # return [["O", "X", "O"], ["O", "X", "O"], ["X", "O", "X"]]          # true - game over
 
 
 def print_board(board):
@@ -35,12 +39,11 @@ def make_move(player, board):
     coords = None
 
     while True:
+        print(f"{player}'s move:")
         coords = get_coords()
 
-        if is_empty(board, coords):
-            board[coords[0]][coords[1]] = player
-            print(board[coords[0]])
-            print_board(board)
+        if is_cell_empty(board, coords):
+            board[coords[1]][coords[0]] = player
             return
 
         print("Cell must be empty")
@@ -61,8 +64,9 @@ def get_coords():
         except ValueError:
             print("Coordinates must be integers")
 
-def is_empty(board, coords):
-    return board[coords[0]][coords[1]] is None
+
+def is_cell_empty(board, coords):
+    return board[coords[1]][coords[0]] is None
 
 
 def game_over(board):
@@ -70,9 +74,12 @@ def game_over(board):
 
     for result in winner:
         if result in PLAYERS:
-            print("Winner:", result)
-            return
-    print("No Winner")
+            return result
+
+    if board_full(board):
+        return True
+
+    return False
     
  
 def check_columns(board):
@@ -113,13 +120,39 @@ def check_diagonals(board):
 
     return
 
+
+def board_full(board):
+    for i in range(SIZE):
+        if None in board[i]:
+            return False
+
+    return True
+
 def start_game():
     board = new_board()
 
-    # print_board(board)
-    # make_move("x", board)
+    x_move = True
 
-    game_over(board)
+    while True:
+        print_board(board)
+
+        if x_move:
+            make_move("X", board)
+        else:
+            make_move("O", board)
+
+        is_over = game_over(board)
+
+        if is_over == True:
+            print("Game Over - No Winner")
+            break
+        elif is_over == False:
+            x_move = not x_move
+            continue
+        else:
+            print(f"Game Over - Winner is {is_over}")
+            break
+
 
 
 start_game()
