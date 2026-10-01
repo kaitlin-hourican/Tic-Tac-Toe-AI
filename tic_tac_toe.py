@@ -1,7 +1,13 @@
 SIZE = 3
+PLAYERS = ('X', 'O')
 
 def new_board():
-    return [[None for _ in range(SIZE)] for _ in range(SIZE)]
+    # return [[None for _ in range(SIZE)] for _ in range(SIZE)]
+
+    # TEST BOARDS - checking winning condition
+    # return [["X", None, None], ["X", None, None], ["X", None, None]]      # col winner
+    return [[None, None, None], ["O", "O", "O"], ["X", None, None]]       # row winner
+    # return [[None, None, "X"], [None, "X", None], ["X", None, None]]      # diagonal winner
 
 
 def print_board(board):
@@ -60,15 +66,60 @@ def is_empty(board, coords):
 
 
 def game_over(board):
+    winner = [check_diagonals(board), check_rows(board), check_columns(board)]
+
+    for result in winner:
+        if result in PLAYERS:
+            print("Winner:", result)
+            return
+    print("No Winner")
+    
+ 
+def check_columns(board):
+    for col in range(SIZE):
+        full_column = set()
+
+        for row in range(SIZE):
+            full_column.add(board[row][col])
+
+        if len(full_column) == 1:
+            return full_column.pop()
+
+    return 
+
+
+def check_rows(board):
+    for row in range(SIZE):
+        full_row = set(board[row])
+        
+        if len(full_row) == 1:
+            el = full_row.pop()
+
+            if el in PLAYERS:
+                return el
+
+    return
+
+
+def check_diagonals(board):
+    asc_diagonal = [board[i][i] for i in range(SIZE)]
+    desc_diagonal = [board[i][SIZE - 1 - i] for i in range(SIZE)]
+
+    if asc_diagonal[0] is not None and len(set(asc_diagonal)) == 1:
+        return asc_diagonal.pop()
+
+    if desc_diagonal[0] is not None and len(set(desc_diagonal)) == 1:
+        return desc_diagonal.pop()
+
     return
 
 def start_game():
     board = new_board()
 
-    print_board(board)
-    make_move("x", board)
+    # print_board(board)
+    # make_move("x", board)
 
-    print(game_over(board))
+    game_over(board)
 
 
 start_game()
