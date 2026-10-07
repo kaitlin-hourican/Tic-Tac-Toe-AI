@@ -1,158 +1,141 @@
+import random
+
 SIZE = 3
 PLAYERS = ('X', 'O')
 
 def new_board():
+    """
+    Creates and returns a new empty game board grid
+
+    Returns:
+        list[list[None]]: a 2D matrix representing an empty grid
+    """
     return [[None for _ in range(SIZE)] for _ in range(SIZE)]
-
-    # TEST - checking winning condition
-    # return [["X", None, None], ["X", None, None], ["X", None, None]]      # col winner
-    # return [[None, None, None], ["O", "O", "O"], ["X", None, None]]       # row winner
-    # return [[None, None, "X"], [None, "X", None], ["X", None, None]]      # diagonal winner
-
-    # TEST - checking if board empty
-    # return [["O", "X", "O"], ["O", "X", "O"], ["X", None, "X"]]         # false - continue game
-    # return [["O", "X", "O"], ["O", "X", "O"], ["X", "O", "X"]]          # true - game over
 
 
 def print_board(board):
-    board_image = ""
+    """
+    Renders current game board with uniform box borders and coordinates
 
-    for i, row in enumerate(board):
-        for j, cell in enumerate(row):
-            if cell is None:
-                board_image += "   "
-            else:
-                board_image += f" {cell} "
-
-            if j == (SIZE - 1):
-               continue
-            board_image += "|"
-
-        if i == (SIZE - 1):
-            continue
-        board_image += "\n-----------\n"
-
-    print(board_image)
+    Args:
+        board (list[list[str[None]]]): current 2D game state matrix
+    """
+    headers = "    " + "   ".join(f"{col}" for col in range(SIZE))
+    divider = "  " + "+" + "---+" * SIZE
+    
+    print(headers)
+    print(divider)
+    for r, row in enumerate(board):
+        row_str = f"{r} | " + " | ".join(cell if cell else " " for cell in row) + " |"
+        print(row_str)
+        print(divider)
 
 
 def make_move(player, board):
-    coords = None
+    """
+    Prompts active player for coordinates and places their token on the board
 
+    Args:
+        player (str): token string of current player ('X' or 'O')
+        board (list[list[str[None]]]): current 2D game state matrix
+    """
     while True:
-        print(f"{player}'s move:")
-        coords = get_coords()
+        print(f"\n{player}'s turn:")
+        row, col = random_ai(board, player)
 
-        if is_cell_empty(board, coords):
-            board[coords[1]][coords[0]] = player
+        if board[row][col] is None:
+            board[row][col] = player
             return
 
-        print("Cell must be empty")
+        print("Cell is already occupied! Try again.")
 
 
 def get_coords():
-    valid_coords = [i for i in range(SIZE)]
-    
+    """
+    repeatedly prompts user for grid coordinates until valid input provided
+
+    Returns:
+        tuple[int, int]: verified (row, column) coordinate index pair
+    """
     while True:
         try:
-            x = int(input("x coordinate: "))
-            y = int(input("y coordinate: "))
+            row = int(input(f"Enter row (0-{SIZE-1}): "))
+            col = int(input(f"Enter column (0-{SIZE-1}): "))
 
-            if x in valid_coords and y in valid_coords:
-                return (x, y)
+            if 0 <= row < SIZE and 0 <= col < SIZE:
+                return row, col
 
-            print("Enter valid coordinates")
+            print("Out of bounds! Stay within the grid parameters.")
         except ValueError:
-            print("Coordinates must be integers")
+            print("Invalid character! Coordinates must be integers.")
 
 
-def is_cell_empty(board, coords):
-    return board[coords[1]][coords[0]] is None
+def random_ai(board, player):
+    free_cells = []
+
+    for col in range(SIZE):
+        for row in range(SIZE):
+            if board[col][row] is None:
+                free_cells.append((col, row))
+
+    return random.choice(free_cells)
 
 
 def game_over(board):
-    winner = [check_diagonals(board), check_rows(board), check_columns(board)]
+    """
+    evaluates board state to check for row, col, diagonal wins, or a tie
 
-    for result in winner:
-        if result in PLAYERS:
-            return result
+    Args:
+        board (list[list[str[None]]]): current 2D game state matrix
+    """
+    # check rows
+    for row in board:
+        if row[0] is not None and all(cell == row[0] for cell in row):
+            return row[0]
 
-    if board_full(board):
-        return True
+    # check cols
+    for col in zip(*board):
+        if col[0] is not None and all(cell == col[0] for cell in col):
+            return col[0]
 
-    return False
+    # check diagonals
+    diag1 = [board[i][i] for i in range(SIZE)]
+    diag2 = [board[i][SIZE - 1 - i] for i in range(SIZE)]
     
- 
-def check_columns(board):
-    for col in range(SIZE):
-        full_column = set()
+    if diag1[0] is not None and all(cell == diag1[0] for cell in diag1):
+        return diag1[0]
+    if diag2[0] is not None and all(cell == diag2[0] for cell in diag2):
+        return diag2[0]
 
-        for row in range(SIZE):
-            full_column.add(board[row][col])
+    # check tie
+    if all(cell is not None for row in board for cell in row):
+        return "Tie"
 
-        if len(full_column) == 1:
-            return full_column.pop()
+    return None
 
-    return 
-
-
-def check_rows(board):
-    for row in range(SIZE):
-        full_row = set(board[row])
-        
-        if len(full_row) == 1:
-            el = full_row.pop()
-
-            if el in PLAYERS:
-                return el
-
-    return
-
-
-def check_diagonals(board):
-    asc_diagonal = [board[i][i] for i in range(SIZE)]
-    desc_diagonal = [board[i][SIZE - 1 - i] for i in range(SIZE)]
-
-    if asc_diagonal[0] is not None and len(set(asc_diagonal)) == 1:
-        return asc_diagonal.pop()
-
-    if desc_diagonal[0] is not None and len(set(desc_diagonal)) == 1:
-        return desc_diagonal.pop()
-
-    return
-
-
-def board_full(board):
-    for i in range(SIZE):
-        if None in board[i]:
-            return False
-
-    return True
 
 def start_game():
+    """manages main execution thread, setup sequence, and turn rotations"""
     board = new_board()
-
-    x_move = True
+    player_index = 0
 
     while True:
         print_board(board)
+        current_player = PLAYERS[player_index]
+        
+        make_move(current_player, board)
+        result = game_over(board)
 
-        if x_move:
-            make_move("X", board)
-        else:
-            make_move("O", board)
-
-        is_over = game_over(board)
-
-        if is_over == True:
-            print("Game Over - No Winner")
-            break
-        elif is_over == False:
-            x_move = not x_move
-            continue
-        else:
-            print(f"Game Over - Winner is {is_over}")
+        if result:
+            print_board(board)  
+            if result == "Tie":
+                print("\nGame Over - It's a draw!")
+            else:
+                print(f"\nGame Over - Winner is {result}!")
             break
 
+        player_index = (player_index + 1) % len(PLAYERS)
 
 
-start_game()
+if __name__ == "__main__":
+    start_game()
