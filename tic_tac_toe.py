@@ -41,7 +41,7 @@ def make_move(player, board):
     """
     while True:
         print(f"\n{player}'s turn:")
-        row, col = random_ai(board, player)
+        row, col = find_winning_moves_ai(board, player)
 
         if board[row][col] is None:
             board[row][col] = player
@@ -79,6 +79,22 @@ def random_ai(board, player):
                 free_cells.append((col, row))
 
     return random.choice(free_cells)
+
+def find_winning_moves_ai(board, player):
+    # cycle throug free cells
+    # check if each cell is winner
+    
+    for col in range(SIZE):
+        for row in range(SIZE):
+            if board[col][row] is None:
+                test_board = [line.copy() for line in board]
+                test_board[col][row] = player
+                winning_move = game_over(test_board)
+
+                if winning_move == player:
+                    return col, row
+
+    return random_ai(board, player)
 
 
 def game_over(board):
@@ -139,3 +155,11 @@ def start_game():
 
 if __name__ == "__main__":
     start_game()
+
+
+# board = [["X", "O", None], [None, "O", None], ["X", None, None]]
+
+# print(find_winning_moves_ai(board, "X"))
+# print(find_winning_moves_ai(board, "X"))
+# print(find_winning_moves_ai(board, "O"))
+# print(find_winning_moves_ai(board, "O"))
