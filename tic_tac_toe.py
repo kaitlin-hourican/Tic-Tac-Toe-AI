@@ -41,7 +41,7 @@ def make_move(player, board):
     """
     while True:
         print(f"\n{player}'s turn:")
-        row, col = find_winning_moves_ai(board, player)
+        row, col = find_winning_and_losing_moves_ai(board, player)
 
         if board[row][col] is None:
             board[row][col] = player
@@ -71,28 +71,54 @@ def get_coords():
 
 
 def random_ai(board, player):
+    """
+    Finds all available empty cells using unified row/col indexing 
+    and returns a random available (row, col) coordinate pair.
+    """
     free_cells = []
 
-    for col in range(SIZE):
-        for row in range(SIZE):
-            if board[col][row] is None:
-                free_cells.append((col, row))
+    for row in range(SIZE):
+        for col in range(SIZE):
+            if board[row][col] is None:
+                free_cells.append((row, col))
 
     return random.choice(free_cells)
 
+
 def find_winning_moves_ai(board, player):
-    # cycle throug free cells
+    # cycle through free cells
     # check if each cell is winner
-    
-    for col in range(SIZE):
-        for row in range(SIZE):
-            if board[col][row] is None:
+    for row in range(SIZE):
+        for col in range(SIZE):
+            if board[row][col] is None:
                 test_board = [line.copy() for line in board]
-                test_board[col][row] = player
+                test_board[row][col] = player
                 winning_move = game_over(test_board)
 
                 if winning_move == player:
-                    return col, row
+                    return row, col
+
+    return random_ai(board, player)
+
+
+def find_winning_and_losing_moves_ai(board, player):
+    p1, p2 = PLAYERS
+    opponent = p2 if player == p1 else p1
+
+    for row in range(SIZE):
+        for col in range(SIZE):
+            if board[row][col] is None:
+                test_board = [line.copy() for line in board]
+
+                # Check if winning move for current player
+                test_board[row][col] = player
+                if game_over(test_board) == player:
+                    return row, col
+                
+                # Check if winning move for opponent (blocking move)
+                test_board[row][col] = opponent
+                if game_over(test_board) == opponent:
+                    return row, col
 
     return random_ai(board, player)
 
@@ -155,11 +181,3 @@ def start_game():
 
 if __name__ == "__main__":
     start_game()
-
-
-# board = [["X", "O", None], [None, "O", None], ["X", None, None]]
-
-# print(find_winning_moves_ai(board, "X"))
-# print(find_winning_moves_ai(board, "X"))
-# print(find_winning_moves_ai(board, "O"))
-# print(find_winning_moves_ai(board, "O"))
