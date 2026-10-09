@@ -1,7 +1,8 @@
-import random
+import random, sys
 
 SIZE = 3
 PLAYERS = ('X', 'O')
+AIS = ["human_player", "random_ai", "find_winning_moves_ai", "find_winning_and_losing_moves_ai"] 
 
 def new_board():
     """
@@ -31,7 +32,7 @@ def print_board(board):
         print(divider)
 
 
-def make_move(player, board):
+def make_move(player, ai, board):
     """
     Prompts active player for coordinates and places their token on the board
 
@@ -41,7 +42,21 @@ def make_move(player, board):
     """
     while True:
         print(f"\n{player}'s turn:")
-        row, col = human_player(board, player)
+        row = None
+        col = None
+
+        match(ai):
+            case "human_player":    
+                row, col = human_player(board, player)
+            case "random_ai":
+                row, col = random_ai(board, player)
+            case "find_winning_moves_ai":
+                row, col = find_winning_moves_ai(board, player)
+            case "find_winning_and_losing_moves_ai":
+                row, col = find_winning_and_losing_moves_ai(board, player)
+            case _:
+                print("Error has occurred")
+                return
 
         if board[row][col] is None:
             board[row][col] = player
@@ -174,12 +189,20 @@ def start_game():
     """manages main execution thread, setup sequence, and turn rotations"""
     board = new_board()
     player_index = 0
+    player_ais = []
+
+    if len(sys.argv) == SIZE and sys.argv[1] in AIS and sys.argv[2] in AIS:
+        player_ais.extend([sys.argv[1], sys.argv[2]])
+    else:
+        player_ais.extend(AIS[0], AIS[0])
+
 
     while True:
         print_board(board)
         current_player = PLAYERS[player_index]
+        current_ai = player_ais[player_index]
         
-        make_move(current_player, board)
+        make_move(current_player, current_ai, board)
         result = game_over(board)
 
         if result:
