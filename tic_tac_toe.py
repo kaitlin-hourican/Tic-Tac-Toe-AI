@@ -41,7 +41,7 @@ def make_move(player, board):
     """
     while True:
         print(f"\n{player}'s turn:")
-        row, col = find_winning_and_losing_moves_ai(board, player)
+        row, col = human_player(board, player)
 
         if board[row][col] is None:
             board[row][col] = player
@@ -68,6 +68,20 @@ def get_coords():
             print("Out of bounds! Stay within the grid parameters.")
         except ValueError:
             print("Invalid character! Coordinates must be integers.")
+
+def human_player(board, player):
+    while True:
+        try:
+            row = int(input(f"Enter row (0--{SIZE - 1}): "))
+            col = int(input(f"Enter column (0--{SIZE - 1}): "))
+
+            if 0 <= row < SIZE and 0 <= col < SIZE and board[row][col] is None:
+                return row, col
+
+            print("Must be empty cell within bounds!")
+        except ValueError:
+            print("Invalid coordinate value!")
+
 
 
 def random_ai(board, player):
