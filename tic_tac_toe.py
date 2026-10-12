@@ -41,7 +41,7 @@ def make_move(player, ai, board):
         board (list[list[str[None]]]): current 2D game state matrix
     """
     while True:
-        print(f"\n{player}'s turn:")
+        # print(f"\n{player}'s turn:")
         row = None
         col = None
 
@@ -58,11 +58,8 @@ def make_move(player, ai, board):
                 print("Error has occurred")
                 return
 
-        if board[row][col] is None:
-            board[row][col] = player
-            return
-
-        print("Cell is already occupied! Try again.")
+        board[row][col] = player
+        return
 
 
 def get_coords():
@@ -187,33 +184,58 @@ def game_over(board):
 
 def start_game():
     """manages main execution thread, setup sequence, and turn rotations"""
-    board = new_board()
-    player_index = 0
+    # board = new_board()
+    # player_index = 0
     player_ais = []
 
-    if len(sys.argv) == SIZE and sys.argv[1] in AIS and sys.argv[2] in AIS:
+    if len(sys.argv) == 3 and sys.argv[1] in AIS and sys.argv[2] in AIS:
         player_ais.extend([sys.argv[1], sys.argv[2]])
     else:
-        player_ais.extend(AIS[0], AIS[0])
+        # default to AI battles if no valid args passed
+        player_ais.extend([AIS[0], AIS[0]])
+
+    p1_count = 0
+    p2_count = 0
+    tie_count = 0
+    total_matches = 1000
+
+    for i in range(total_matches):
+        board = new_board()
+        player_index = i % 2
+
+        while True:
+            # print_board(board)
+            current_player = PLAYERS[player_index]
+            current_ai = player_ais[player_index]
+            
+            make_move(current_player, current_ai, board)
+            result = game_over(board)
+
+            if result:
+                # print_board(board)  
+                # if result == "Tie":
+                #     print("\nGame Over - It's a draw!")
+                # else:
+                #     print(f"\nGame Over - Winner is {result}!")
+                # break
+
+                # for repeated battles
+                if result == "X":
+                    p1_count += 1
+                elif result == "O":
+                    p2_count += 1
+                else:
+                    tie_count += 1
+                break
 
 
-    while True:
-        print_board(board)
-        current_player = PLAYERS[player_index]
-        current_ai = player_ais[player_index]
-        
-        make_move(current_player, current_ai, board)
-        result = game_over(board)
+            player_index = (player_index + 1) % len(PLAYERS)
 
-        if result:
-            print_board(board)  
-            if result == "Tie":
-                print("\nGame Over - It's a draw!")
-            else:
-                print(f"\nGame Over - Winner is {result}!")
-            break
+    print(f"""1000 matches:
+  {player_ais[0]} wins: {p1_count}
+  {player_ais[1]} wins: {p2_count}
+  Ties: {tie_count}""")
 
-        player_index = (player_index + 1) % len(PLAYERS)
 
 
 if __name__ == "__main__":
